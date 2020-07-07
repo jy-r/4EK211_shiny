@@ -39,13 +39,13 @@ simulated_dta <- as.data.frame(simulated_dta)
 # UI
 # -----------------------------
 ui <- dashboardPage(
-  dashboardHeader(title = "Basic dashboard"),
+  dashboardHeader(title = "4EK211"),
   dashboardSidebar(
     sidebarMenu(
       menuItem("Příklad 1 - Úvod", tabName = "ex_1_a"),
-      menuItem("Příklad 1 - rezidua", tabName = "ex_1_b"),
+      menuItem("Příklad 1 - Rezidua", tabName = "ex_1_b"),
       menuItem("Příklad 2 - Otcové a synové", tabName = "ex_2_a"),
-      menuItem("Příklad 2 - odhad MNČ", tabName = "ex_2_b"),
+      menuItem("Příklad 2 - Odhad MNČ", tabName = "ex_2_b"),
       menuItem("Příklad 3 - Simulace", tabName = "ex_3_a"),
       menuItem("Příklad 3 - vlastnosti MNČ", tabName = "ex_3_b")
     )
@@ -173,11 +173,14 @@ server <- function(input, output) {
 
   output$plot1_fit <- renderPlot({
     sim_data$fit <- input$beta_0_b + input$beta_1_b * sim_data$x
+		sim_data_1 <- sim_data[10,]
+		colnames(sim_data_1) <- paste0("s",colnames(sim_data_1))
     ggplot(data = sim_data) +
       geom_point(aes(x, y)) +
       geom_line(aes(x, fit),
         color = "red"
-      ) +
+     ) +
+			geom_segment(aes(x = x, y = y, xend = x, yend = fit),linetype=2, alpha=0.3) +
       theme_bw() +
       xlab("x") +
       ylab("y")
@@ -188,6 +191,8 @@ server <- function(input, output) {
     sim_data$res <- sim_data$y - sim_data$fit
     ggplot(data = sim_data) +
       geom_point(aes(x, res)) +
+			geom_segment(aes(x = x, y = res, xend = x, yend = 0),linetype=2, alpha=0.3) +
+			geom_hline(yintercept = 0, colour= "blue")+
       theme_bw() +
       xlab("x") +
       ylab("Rezidua")
