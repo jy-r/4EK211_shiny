@@ -332,6 +332,8 @@ server <- function(input, output) {
     simulated_coefs <- data.frame(t(sapply(simulated_coefs, function(x) coef(x$model))))
     colnames(simulated_coefs) <- c("beta0", "beta1")
     simulated_coefs <- tidyr::gather(simulated_coefs, "param", "value")
+		b0 <- mean(simulated_coefs[simulated_coefs == "beta0","value"])
+		b1 <- mean(simulated_coefs[simulated_coefs == "beta1","value"])
 
     # 3.96 sd beta0
     # 0.25 sd beta1
@@ -339,6 +341,7 @@ server <- function(input, output) {
       geom_histogram(aes(x = value, y = ..density..), fill = "lightgrey", colour = "black", bins = 15) +
       stat_function(fun = dnorm, args = list(mean = 10, sd = 24)) +
       geom_vline(xintercept = 10, colour = "red") +
+			geom_vline(xintercept = b0, colour= "blue") +
 			#ylim(0, 0.05)+
       xlim(-45, 65) +
       theme_bw()
@@ -346,6 +349,7 @@ server <- function(input, output) {
       geom_histogram(aes(x = value, y = ..density..), fill = "lightgrey", colour = "black", bins = 15) +
       stat_function(fun = dnorm, args = list(mean = 5, sd = 1.5)) +
       geom_vline(xintercept = 5, colour = "red") +
+			geom_vline(xintercept = b1, colour= "blue") +
 			#ylim(0, 0.5)+
       xlim(0, 10) +
       theme_bw()
