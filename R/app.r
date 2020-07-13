@@ -17,9 +17,9 @@ x <- 1:25
 y <- 15 + 8.3 * x + rnorm(length(x), 0, 30)
 sim_data <- data.frame(y, x, fit = 0, res = 0)
 
-# Data - for bootstrap 
+# Data - for bootstrap
 # --------------------------
-x <- rep(1:25, 200)
+x <- rep(1:25, 300)
 u <- rnorm(length(x), mean = 0, sd = 60)
 y <- 10 + 5 * x + u
 model <- lm(y ~ x)
@@ -27,7 +27,7 @@ simulated_dta <- matrix(c(y, x, u), ncol = 3)
 colnames(simulated_dta) <- c("y", "x", "u")
 simulated_models <- list()
 l <- 0
-for (i in 1:(199)) {
+for (i in 1:(299)) {
   dta_sample <- as.data.frame(simulated_dta[seq(l, l + 25, by = 1), ])
   model <- lm(y ~ x, data = dta_sample)
   dta_sample$fit <- fitted(model)
@@ -61,10 +61,11 @@ ui <- dashboardPage(
             div("$$ y = \\beta_0 + \\beta_1 x + u, $$"),
             div("kde	\\(\\beta_0\\) představuje úrovňovou konstantu, \\(\\beta_1\\) sklon přímky"),
             sliderInput("beta_0_a", "b_0", 0, 50, value = 0, step = .1),
-            sliderInput("beta_1_a", "b_1", 0, 50, value = 0, step = 1)
+            sliderInput("beta_1_a", "b_1", 0, 50, value = 0, step = 1),
+						height = 525
           ),
           box(
-            plotOutput("plot1_intro", height = 250)
+            plotOutput("plot1_intro", height = 500)
           )
         )
       ),
@@ -77,58 +78,70 @@ ui <- dashboardPage(
             div("$$ y = \\beta_0 + \\beta_1 x + u, $$"),
             div("$$ \\hat{y} = \\hat{\\beta}_0 + \\hat{\\beta}_1 x = b_0 + b_1 x, $$"),
             div("kde	\\(\\beta_0\\) představuje úrovňovou konstantu, \\(\\beta_1\\) sklon přímky"),
-					  div("$$\\hat{u} = y - \\hat{y}$$"),
-						div("Zkuste odhadnout parametry regresní přímky"),
-          	sliderInput("beta_0_b", "b_0", 0, 50, value = 0, step = .1),
-          	sliderInput("beta_1_b", "b_1", 0, 50, value = 0, step = 1)),
-          	box(plotOutput("plot1_fit", height = 250),
-          	plotOutput("plot1_residuals", height = 250)
-					)
+            div("$$\\hat{u} = y - \\hat{y}$$"),
+            div("Zkuste odhadnout parametry regresní přímky"),
+            sliderInput("beta_0_b", "b_0", 0, 50, value = 0, step = .1),
+            sliderInput("beta_1_b", "b_1", 0, 50, value = 0, step = 1),
+						height = 525
+          ),
+          box(
+            plotOutput("plot1_fit", height = 250),
+            plotOutput("plot1_residuals", height = 250)
+          )
         ),
       ),
       tabItem(
         tabName = "ex_2_a",
-        h2("Pearsonův dataset - výška otců a jejich synů"),
         fluidRow(
-					box(
-					div("$$\\hat{y} = b_0 + b_1 x$$"),
-					div("$$\\hat{u} = y - \\hat{y}$$"),
-					div("Chyba = \\(\\sum{\\hat{u}^2} = \\sum(y - \\hat{y})^2\\)"),
-          div("Zkuste zvolit parametry, tak aby chyba byla minimální"),
-          sliderInput("fs_beta_0", "b_0", 0, 250, value = 0, step = .1),
-          sliderInput("fs_beta_1", "b_1", 0, 1.2, value = 0, step = 0.01)),
-          box(plotOutput("plot_father_son", height = 250))
-				),
-				fluidRow(
-          valueBoxOutput("error_box", width= 4),
-          valueBoxOutput("error_min_box", width= 4)
+          box(
+						div("Pearsonův dataset - výška otců a jejich synů"),
+            div("$$\\hat{y} = b_0 + b_1 x$$"),
+            div("$$\\hat{u} = y - \\hat{y}$$"),
+            div("Chyba = \\(\\sum{\\hat{u}^2} = \\sum(y - \\hat{y})^2\\)"),
+            div("Zkuste zvolit parametry, tak aby chyba byla minimální"),
+            sliderInput("fs_beta_0", "b_0", 0, 250, value = 0, step = .1),
+            sliderInput("fs_beta_1", "b_1", 0, 1.2, value = 0, step = 0.01),
+						height = 525
+          ),
+          box(plotOutput("plot_father_son", height = 500))
+        ),
+        fluidRow(
+          valueBoxOutput("error_box", width = 4),
+          valueBoxOutput("error_min_box", width = 4)
         ),
       ),
       tabItem(
         tabName = "ex_2_b",
-        box(actionButton("estimate", "Odhadnout přímku metodou nejmenších čtverců"),
-        verbatimTextOutput("model_values")),
-        box(plotOutput("plot_2_estimated"))
+        box(
+          actionButton("estimate", "Odhadnout přímku metodou nejmenších čtverců"),
+          verbatimTextOutput("model_values"),
+						height = 525
+        ),
+        box(plotOutput("plot_2_estimated", 
+						height = 500))
       ),
       tabItem(
         tabName = "ex_3_a",
         fluidRow(
           box(
-							div("Zkusíme nasimulovat data na kterých můžeme ověřit zdali MNČ"), 
-							div("$$ y = \\beta_0 + \\beta_1 x + u$$ a náhodná složka by pocházela z normálního rozdělení se střední hodnotou \\( \\mu \\) a směrodatnou odchylkou \\( \\sigma \\)"),
-							div("$$ u \\sim N(\\mu, \\sigma), $$"),
-							div("dále zvolíme populační parametry \\( \\beta_0 = 10 \\) a \\( \\beta_1 = 5 \\)"),
-							div("pak populace lze popsat jako"), 
-							div("$$ y \\sim N(10 + 5 x, \\sigma) $$"),
-							div("z této populace náhodně vybereme vzorek o velikosti \\( n = 25 \\) a odhadneme."),
+            div("Zkusíme nasimulovat data na kterých můžeme ověřit zdali MNČ skutečně funguje."),
+            div("Budeme vycházet z následující vztahu mezi vysvětlovanou proměnnou \\( y \\) a vysvětlující \\( x \\)"),
+            div("$$ y = \\beta_0 + \\beta_1 x + u,$$ kde náhodná složka \\( u \\) by pocházela z normálního rozdělení se střední hodnotou \\( \\mu \\) a směrodatnou odchylkou \\( \\sigma \\)"),
+            div("$$ u \\sim N(\\mu, \\sigma), $$."),
+            div("Dále zvolíme populační parametry \\( \\beta_0 = 10 \\) a \\( \\beta_1 = 5 \\)."),
+            div("Populaci můžeme tedy popsat jako"),
+            div("$$ y \\sim N(10 + 5 x, \\sigma) $$"),
+            div("a z této populace náhodně vybereme/vygenerujeme vzorek o velikosti \\( n = 25 \\) a na něm provedeme odhad."),
             numericInput("sim_1_mu", "Střední hodnota", value = 0),
             numericInput("sim_1_sd", "Směrodatná odchylka", value = 60),
             sliderInput("sim_1_beta_0", "$beta_0$", 0, 100, value = 10, step = .1),
             sliderInput("sim_1_beta_1", "$beta_1$", 0, 10, value = 5, step = 0.01),
           ),
-          box(plotOutput("plot_3_sim_1"),
+          box(
+            plotOutput("plot_3_sim_1"),
             actionButton("sim_1_estimate", "Odhadnout"),
-        verbatimTextOutput("sim_1_model_values"))
+            verbatimTextOutput("sim_1_model_values")
+          )
         ),
       ),
       tabItem(
@@ -136,7 +149,8 @@ ui <- dashboardPage(
         fluidRow(
           box(
             plotOutput("plot_3_sim_2"),
-            actionButton("sim_2_estimate", "Zopakovat výběr a odhadnout")
+            actionButton("sim_2_estimate", "Zopakovat výběr a odhadnout"),
+						height = 525
           ),
           box(
             plotOutput("plot_3_sim_2_bar"),
@@ -173,14 +187,14 @@ server <- function(input, output) {
 
   output$plot1_fit <- renderPlot({
     sim_data$fit <- input$beta_0_b + input$beta_1_b * sim_data$x
-		sim_data_1 <- sim_data[10,]
-		colnames(sim_data_1) <- paste0("s",colnames(sim_data_1))
+    sim_data_1 <- sim_data[10, ]
+    colnames(sim_data_1) <- paste0("s", colnames(sim_data_1))
     ggplot(data = sim_data) +
       geom_point(aes(x, y)) +
       geom_line(aes(x, fit),
         color = "red"
-     ) +
-			geom_segment(aes(x = x, y = y, xend = x, yend = fit),linetype=2, alpha=0.3) +
+      ) +
+      geom_segment(aes(x = x, y = y, xend = x, yend = fit), linetype = 2, alpha = 0.3) +
       theme_bw() +
       xlab("x") +
       ylab("y")
@@ -191,8 +205,8 @@ server <- function(input, output) {
     sim_data$res <- sim_data$y - sim_data$fit
     ggplot(data = sim_data) +
       geom_point(aes(x, res)) +
-			geom_segment(aes(x = x, y = res, xend = x, yend = 0),linetype=2, alpha=0.3) +
-			geom_hline(yintercept = 0, colour= "blue")+
+      geom_segment(aes(x = x, y = res, xend = x, yend = 0), linetype = 2, alpha = 0.3) +
+      geom_hline(yintercept = 0, colour = "blue") +
       theme_bw() +
       xlab("x") +
       ylab("Rezidua")
@@ -323,17 +337,15 @@ server <- function(input, output) {
     if (input$sim_2_estimate > 5) i <- input$sim_2_estimate * 3
     if (input$sim_2_estimate > 10) i <- input$sim_2_estimate * 10
     if (input$sim_2_estimate > 15) i <- input$sim_2_estimate * 20
-    if (i > 199) i <- 199
-
-
+    if (i > 299) i <- 299
 
     simulated_coefs <- simulated_models[1:i]
 
     simulated_coefs <- data.frame(t(sapply(simulated_coefs, function(x) coef(x$model))))
     colnames(simulated_coefs) <- c("beta0", "beta1")
     simulated_coefs <- tidyr::gather(simulated_coefs, "param", "value")
-		b0 <- mean(simulated_coefs[simulated_coefs == "beta0","value"])
-		b1 <- mean(simulated_coefs[simulated_coefs == "beta1","value"])
+    b0 <- mean(simulated_coefs[simulated_coefs == "beta0", "value"])
+    b1 <- mean(simulated_coefs[simulated_coefs == "beta1", "value"])
 
     # 3.96 sd beta0
     # 0.25 sd beta1
@@ -341,16 +353,18 @@ server <- function(input, output) {
       geom_histogram(aes(x = value, y = ..density..), fill = "lightgrey", colour = "black", bins = 15) +
       stat_function(fun = dnorm, args = list(mean = 10, sd = 24)) +
       geom_vline(xintercept = 10, colour = "red") +
-			geom_vline(xintercept = b0, colour= "blue") +
-			#ylim(0, 0.05)+
+      geom_vline(xintercept = b0, colour = "blue") +
+      # ylim(0, 0.05)+
+			xlab("beta_0")+
       xlim(-45, 65) +
       theme_bw()
     g2_beta1 <- ggplot(data = simulated_coefs[simulated_coefs$param == "beta1", ]) +
       geom_histogram(aes(x = value, y = ..density..), fill = "lightgrey", colour = "black", bins = 15) +
       stat_function(fun = dnorm, args = list(mean = 5, sd = 1.5)) +
       geom_vline(xintercept = 5, colour = "red") +
-			geom_vline(xintercept = b1, colour= "blue") +
-			#ylim(0, 0.5)+
+      geom_vline(xintercept = b1, colour = "blue") +
+      # ylim(0, 0.5)+
+			xlab("beta_1")+
       xlim(0, 10) +
       theme_bw()
     gridExtra::grid.arrange(g1_beta0, g2_beta1)
