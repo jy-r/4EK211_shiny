@@ -6,7 +6,7 @@ library(ggExtra)
 
 # Data loading
 # --------------------------
-father_son <- readRDS("../data/father_son.Rds")
+father_son <- readRDS("data/father_son.Rds")
 set.seed(122)
 father_son_sample <- father_son[sample(1:nrow(father_son), 30), ]
 father_son_sample$fit <- NA
@@ -19,7 +19,7 @@ sim_data <- data.frame(y, x, fit = 0, res = 0)
 
 # Data - for bootstrap
 # --------------------------
-x <- rep(1:25, 300)
+x <- rep(1:25, 350)
 u <- rnorm(length(x), mean = 0, sd = 60)
 y <- 10 + 5 * x + u
 model <- lm(y ~ x)
@@ -27,7 +27,7 @@ simulated_dta <- matrix(c(y, x, u), ncol = 3)
 colnames(simulated_dta) <- c("y", "x", "u")
 simulated_models <- list()
 l <- 0
-for (i in 1:(299)) {
+for (i in 1:(349)) {
   dta_sample <- as.data.frame(simulated_dta[seq(l, l + 25, by = 1), ])
   model <- lm(y ~ x, data = dta_sample)
   dta_sample$fit <- fitted(model)
@@ -42,12 +42,15 @@ ui <- dashboardPage(
   dashboardHeader(title = "4EK211"),
   dashboardSidebar(
     sidebarMenu(
-      menuItem("Příklad 1 - Úvod", tabName = "ex_1_a"),
-      menuItem("Příklad 1 - Rezidua", tabName = "ex_1_b"),
-      menuItem("Příklad 2 - Otcové a synové", tabName = "ex_2_a"),
-      menuItem("Příklad 2 - Odhad MNČ", tabName = "ex_2_b"),
-      menuItem("Příklad 3 - Simulace", tabName = "ex_3_a"),
-      menuItem("Příklad 3 - vlastnosti MNČ", tabName = "ex_3_b")
+      menuItem("Příklad 1", tabName = "ex_1_a",
+      menuItem("Úvod", tabName = "ex_1_a"),
+      menuItem("Rezidua", tabName = "ex_1_b"), startExpanded=TRUE),
+      menuItem("Příklad 2 - Otcové a synové", tabName = "ex_2_a",
+      menuItem("Kritérium výběru", tabName = "ex_2_a"),
+      menuItem("Odhad MNČ", tabName = "ex_2_b"), startExpanded=TRUE),
+      menuItem("Příklad 3 - Simulace", tabName = "ex_3_a",
+      menuItem("Simulace dat", tabName = "ex_3_a"),
+      menuItem("Vlastnosti MNČ", tabName = "ex_3_b"), startExpanded=TRUE)
     )
   ),
   dashboardBody(
@@ -60,8 +63,8 @@ ui <- dashboardPage(
             div("Zkuste odhadnout parametry regresní přímky"),
             div("$$ y = \\beta_0 + \\beta_1 x + u, $$"),
             div("kde	\\(\\beta_0\\) představuje úrovňovou konstantu, \\(\\beta_1\\) sklon přímky"),
-            sliderInput("beta_0_a", "b_0", 0, 50, value = 0, step = .1),
-            sliderInput("beta_1_a", "b_1", 0, 50, value = 0, step = 1),
+            sliderInput("beta_0_a", "\\(b_0\\)", 0, 50, value = 0, step = .1),
+            sliderInput("beta_1_a", "\\(b_1\\)", 0, 50, value = 0, step = 1),
 						height = 525
           ),
           box(
@@ -74,14 +77,14 @@ ui <- dashboardPage(
         fluidRow(
           box(
             withMathJax(),
-            div("Zkuste odhadnout parametry regresní přímky"),
             div("$$ y = \\beta_0 + \\beta_1 x + u, $$"),
+						div("Odhadnuté parametry značíme \\( \\hat{\\beta_1} \\), \\( \\hat{\\beta_1} \\), případně \\( b_0 \\),\\( b_1 \\)"),
             div("$$ \\hat{y} = \\hat{\\beta}_0 + \\hat{\\beta}_1 x = b_0 + b_1 x, $$"),
-            div("kde	\\(\\beta_0\\) představuje úrovňovou konstantu, \\(\\beta_1\\) sklon přímky"),
+						div("Rozdíl mezi \\( y \\) a odhadem \\( \\hat{y} \\) nazýváme rezidua a představují chybu odhadu"),
             div("$$\\hat{u} = y - \\hat{y}$$"),
-            div("Zkuste odhadnout parametry regresní přímky"),
-            sliderInput("beta_0_b", "b_0", 0, 50, value = 0, step = .1),
-            sliderInput("beta_1_b", "b_1", 0, 50, value = 0, step = 1),
+            div("Zkuste znovu odhadnout parametry a sledujte jak se změny odráží na reziduích"),
+            sliderInput("beta_0_b", "\\(b_0\\)", 0, 50, value = 0, step = .1),
+            sliderInput("beta_1_b", "\\(b_1\\)", 0, 50, value = 0, step = 1),
 						height = 525
           ),
           box(
@@ -95,12 +98,12 @@ ui <- dashboardPage(
         fluidRow(
           box(
 						div("Pearsonův dataset - výška otců a jejich synů"),
-            div("$$\\hat{y} = b_0 + b_1 x$$"),
+            div("$$výška syn = b_0 + b_1 výška otce + u$$"),
             div("$$\\hat{u} = y - \\hat{y}$$"),
-            div("Chyba = \\(\\sum{\\hat{u}^2} = \\sum(y - \\hat{y})^2\\)"),
+            div("Minimalizujeme součet čtverců reziduí    $$min \\sum{\\hat{u}^2} = \\sum(y - \\hat{y})^2$$"),
             div("Zkuste zvolit parametry, tak aby chyba byla minimální"),
-            sliderInput("fs_beta_0", "b_0", 0, 250, value = 0, step = .1),
-            sliderInput("fs_beta_1", "b_1", 0, 1.2, value = 0, step = 0.01),
+            sliderInput("fs_beta_0", "\\(b_0\\)", 0, 50, value = 0, step = .01),
+            sliderInput("fs_beta_1", "\\(b_1\\)", 0, 1.2, value = 0, step = 0.001),
 						height = 525
           ),
           box(plotOutput("plot_father_son", height = 500))
@@ -124,18 +127,17 @@ ui <- dashboardPage(
         tabName = "ex_3_a",
         fluidRow(
           box(
-            div("Zkusíme nasimulovat data na kterých můžeme ověřit zdali MNČ skutečně funguje."),
-            div("Budeme vycházet z následující vztahu mezi vysvětlovanou proměnnou \\( y \\) a vysvětlující \\( x \\)"),
-            div("$$ y = \\beta_0 + \\beta_1 x + u,$$ kde náhodná složka \\( u \\) by pocházela z normálního rozdělení se střední hodnotou \\( \\mu \\) a směrodatnou odchylkou \\( \\sigma \\)"),
-            div("$$ u \\sim N(\\mu, \\sigma), $$."),
+            div("Při simulování dat budeme vycházet z následujícího vztahu mezi vysvětlovanou proměnnou \\( y \\) a vysvětlující \\( x \\)"),
+            div("$$ y = \\beta_0 + \\beta_1 x + u,$$ kde náhodná složka \\( u \\) pochází z normálního rozdělení se střední hodnotou \\( \\mu \\) a směrodatnou odchylkou \\( \\sigma \\)"),
+            div("$$ u \\sim N(\\mu, \\sigma), $$"),
             div("Dále zvolíme populační parametry \\( \\beta_0 = 10 \\) a \\( \\beta_1 = 5 \\)."),
             div("Populaci můžeme tedy popsat jako"),
             div("$$ y \\sim N(10 + 5 x, \\sigma) $$"),
             div("a z této populace náhodně vybereme/vygenerujeme vzorek o velikosti \\( n = 25 \\) a na něm provedeme odhad."),
-            numericInput("sim_1_mu", "Střední hodnota", value = 0),
-            numericInput("sim_1_sd", "Směrodatná odchylka", value = 60),
-            sliderInput("sim_1_beta_0", "$beta_0$", 0, 100, value = 10, step = .1),
-            sliderInput("sim_1_beta_1", "$beta_1$", 0, 10, value = 5, step = 0.01),
+            numericInput("sim_1_mu", "Střední hodnota náhodné složky", value = 0),
+            numericInput("sim_1_sd", "Směrodatná odchylka náhodné složky", value = 60),
+            sliderInput("sim_1_beta_0", "\\(beta_0\\)", 0, 100, value = 10, step = .1),
+            sliderInput("sim_1_beta_1", "\\(beta_1\\)", 0, 10, value = 5, step = 0.01),
           ),
           box(
             plotOutput("plot_3_sim_1"),
@@ -337,7 +339,7 @@ server <- function(input, output) {
     if (input$sim_2_estimate > 5) i <- input$sim_2_estimate * 3
     if (input$sim_2_estimate > 10) i <- input$sim_2_estimate * 10
     if (input$sim_2_estimate > 15) i <- input$sim_2_estimate * 20
-    if (i > 299) i <- 299
+    if (i > 349) i <- 349
 
     simulated_coefs <- simulated_models[1:i]
 
